@@ -20,6 +20,9 @@ is heard. They check:
   characters or more is ignored without a message.
 - The exit code is 0 in every case.
 
+The build job also runs `test/measure.ps1 -NoSound`, which shows how long
+it takes to start `playsound.exe` and `powershell.exe` (no sound plays).
+
 ## Manual tests
 
 These tests need a Windows PC with speakers. Write the result after each

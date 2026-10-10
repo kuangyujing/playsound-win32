@@ -137,7 +137,7 @@ Run this in a Command Prompt or PowerShell window in the repository
 folder:
 
 ```
-build.cmd
+.\build.cmd
 ```
 
 The output is `build\playsound.exe`. `build.cmd` finds Visual Studio with
@@ -159,6 +159,24 @@ GitHub Actions builds and tests the exe for every push. When a tag that
 starts with `v` (for example `v1.0.0`) is pushed, GitHub Actions also
 creates a release with the zip file. See [TESTING.md](TESTING.md) for the
 tests that need speakers.
+
+## Size, DLLs, and start-up time
+
+Measured on GitHub Actions (`windows-latest`: Windows Server 2025 with
+Visual Studio 2026, x64):
+
+| | |
+| --- | --- |
+| Size of `playsound.exe` | 4,096 bytes |
+| DLLs that `playsound.exe` needs | `KERNEL32.dll`, `WINMM.dll` |
+| Time to run `playsound.exe -h` | 3.7 ms |
+| Time to run `powershell.exe -NoProfile -NonInteractive -Command exit` | 113.5 ms |
+
+Each time is the median of 21 runs, measured with
+`test\measure.ps1 -NoSound`. No sound plays, so the times show only the
+cost of starting each program.
+To compare the time to play a sound with PowerShell's `SoundPlayer`, run
+`test\measure.ps1` on a PC with speakers.
 
 ## License
 
