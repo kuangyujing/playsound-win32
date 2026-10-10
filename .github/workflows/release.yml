@@ -1,0 +1,51 @@
+name: Release
+
+# When a release is published, build and test the exe, and add a zip file
+# (the exe, LICENSE, and README.md) and its SHA-256 hash to the release.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and add files to the release
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Check that files can be added
+        shell: pwsh
+        run: |
+          # Files cannot be added to an immutable release after it is
+          # published.
+          if ((gh release view $env:TAG --json isImmutable --jq .isImmutable) -eq 'true') {
+            Write-Output "::error::Release $env:TAG is immutable, so files cannot be added to it. Turn off release immutability in the repository settings, and then publish a new release with a new tag."
+            exit 1
+          }
+
+      - uses: actions/checkout@v7
+
+      - name: Build
+        shell: cmd
+        run: build.cmd
+
+      - name: Test
+        shell: pwsh
+        run: ./test/smoke.ps1 build/playsound.exe
+
+      - name: Add files to the release
+        shell: pwsh
+        run: |
+          $zip = "playsound-$env:TAG-x64.zip"
+          Compress-Archive -Path build/playsound.exe, LICENSE, README.md -DestinationPath $zip
+          $hash = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          [System.IO.File]::WriteAllText((Join-Path $PWD 'SHA256SUMS.txt'), "$hash  $zip`n")
+          gh release upload $env:TAG $zip SHA256SUMS.txt --clobber

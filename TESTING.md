@@ -2,7 +2,8 @@
 
 ## Automatic tests
 
-[`test/smoke.ps1`](test/smoke.ps1) runs on GitHub Actions for every push.
+[`test/smoke.ps1`](test/smoke.ps1) runs on GitHub Actions for every pull
+request to `main`, and again before the files are added to a release.
 The runners have no audio device, so the tests cannot check that a sound
 is heard. They check:
 
@@ -20,8 +21,9 @@ is heard. They check:
   characters or more is ignored without a message.
 - The exit code is 0 in every case.
 
-The build job also runs `test/measure.ps1 -NoSound`, which shows how long
-it takes to start `playsound.exe` and `powershell.exe` (no sound plays).
+The pull request check also runs `test/measure.ps1 -NoSound`, which shows
+how long it takes to start `playsound.exe` and `powershell.exe` (no sound
+plays).
 
 ## Manual tests
 
