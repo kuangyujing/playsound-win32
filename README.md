@@ -155,31 +155,19 @@ To run the tests (they do not need speakers):
 pwsh test\smoke.ps1
 ```
 
-GitHub Actions builds and tests the exe for every push. See
-[TESTING.md](TESTING.md) for the tests that need speakers.
+GitHub Actions builds and tests the exe for every pull request to
+`main`. See [TESTING.md](TESTING.md) for the tests that need speakers.
 
 ## Make a release
 
-GitHub Actions makes the release and adds `playsound-<tag>-x64.zip` and
-`SHA256SUMS.txt` to it. Start it in one of these ways:
+On the **Releases** page, publish a new release with a new tag, for
+example `v1.0.1`. When the release is published, GitHub Actions builds
+and tests the exe again, and adds `playsound-<tag>-x64.zip` and
+`SHA256SUMS.txt` to the release.
 
-- On the **Actions** tab, open the **Build** workflow, click
-  **Run workflow**, and enter a new tag, for example `v1.0.1`. GitHub
-  Actions also makes the tag.
-- Push a new tag that starts with `v`:
-
-  ```
-  git tag v1.0.1
-  git push origin v1.0.1
-  ```
-
-If release immutability is turned on for the repository (in
-**Settings**, under **Releases**), files cannot be added to a release
-after it is published. So do not publish the release on the **Releases**
-page before the workflow runs. To write the release notes first, save the
-release as a draft on the **Releases** page, and then run the workflow
-with the same tag: the workflow adds the files to the draft, and then you
-publish it.
+GitHub Actions adds the files after the release is published, so release
+immutability must be turned off for the repository (in **Settings**,
+under **Releases**). Files cannot be added to an immutable release.
 
 ## Size, DLLs, and start-up time
 
