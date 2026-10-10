@@ -1,6 +1,14 @@
 name: Build
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag for a new release, for example v1.0.1. Leave it empty to only build and test.
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -32,16 +40,24 @@ jobs:
           path: build/playsound.exe
           if-no-files-found: error
 
-  # When a tag that starts with "v" is pushed (for example v1.0.0), make a
-  # GitHub release with a zip file of the exe, LICENSE, and README.md.
+  # Make a GitHub release with a zip file of the exe, LICENSE, and
+  # README.md. This runs when a tag that starts with "v" is pushed, or when
+  # the workflow is run by hand with a tag (see "Make a release" in
+  # README.md).
   release:
     name: Create release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && inputs.tag != '')
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v7
 
@@ -51,12 +67,29 @@ jobs:
           name: playsound-x64
           path: dist
 
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+      - name: Create release or add files
+        shell: bash
         run: |
-          zip -j "playsound-$TAG-x64.zip" dist/playsound.exe LICENSE README.md
-          sha256sum "playsound-$TAG-x64.zip" > SHA256SUMS.txt
-          gh release create "$TAG" "playsound-$TAG-x64.zip" SHA256SUMS.txt \
-            --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          zip_name="playsound-$TAG-x64.zip"
+          zip -j "$zip_name" dist/playsound.exe LICENSE README.md
+          sha256sum "$zip_name" > SHA256SUMS.txt
+
+          if ! names=$(gh release view "$TAG" --json assets --jq '.assets[].name' 2>/dev/null); then
+            # There is no release for this tag. Make it, and make the tag if
+            # it does not exist. gh adds the files to a draft release first
+            # and then publishes it, so this also works with immutable
+            # releases.
+            gh release create "$TAG" "$zip_name" SHA256SUMS.txt \
+              --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          elif grep -qxF "$zip_name" <<< "$names"; then
+            echo "Release $TAG already has $zip_name."
+          elif [ "$(gh release view "$TAG" --json isImmutable --jq .isImmutable)" = true ]; then
+            # The release was published on the Releases page without the
+            # files. GitHub does not allow adding files to it.
+            echo "::error::Release $TAG is immutable, so files cannot be added to it. Make a new release with a new tag. See \"Make a release\" in README.md."
+            exit 1
+          else
+            # A draft release, or a release that is not immutable, was made
+            # on the Releases page. Add the files to it.
+            gh release upload "$TAG" "$zip_name" SHA256SUMS.txt --clobber
+          fi
