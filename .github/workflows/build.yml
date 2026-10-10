@@ -21,6 +21,10 @@ jobs:
         shell: pwsh
         run: ./test/smoke.ps1 build/playsound.exe
 
+      - name: Measure start-up time
+        shell: pwsh
+        run: ./test/measure.ps1 -Exe build/playsound.exe -NoSound -Count 21
+
       - name: Upload exe
         uses: actions/upload-artifact@v7
         with:
