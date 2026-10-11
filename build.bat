@@ -1,7 +1,7 @@
 @echo off
 rem Build build\playsound.exe (x64) with the Microsoft C compiler (MSVC).
 rem
-rem Usage: build.cmd
+rem Usage: build.bat
 rem
 rem This script finds Visual Studio with vswhere.exe and sets up the build
 rem environment with VsDevCmd.bat. You can run it from a normal Command

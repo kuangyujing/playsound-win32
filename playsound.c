@@ -13,7 +13,7 @@
  * The program does not use the C runtime library (CRT). This keeps the
  * exe small, and the only DLLs it needs are kernel32.dll and winmm.dll.
  * Because of this:
- *   - The entry point is entry(), not main(). See /ENTRY in build.cmd.
+ *   - The entry point is entry(), not main(). See /ENTRY in build.bat.
  *   - The command line is read by our own code, with the same rules as
  *     the Microsoft C runtime.
  *   - Large buffers are static, not on the stack. Large stack buffers
@@ -181,7 +181,7 @@ static void play(const WCHAR *file)
         write_text(STD_ERROR_HANDLE, "playsound: cannot play the file\r\n");
 }
 
-/* Entry point of the program (see /ENTRY in build.cmd). */
+/* Entry point of the program (see /ENTRY in build.bat). */
 void __stdcall entry(void)
 {
     const WCHAR *rest;
