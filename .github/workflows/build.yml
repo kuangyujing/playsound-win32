@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         shell: cmd
-        run: build.cmd
+        run: build.bat
 
       - name: Test
         shell: pwsh

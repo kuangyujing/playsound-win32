@@ -137,10 +137,10 @@ Run this in a Command Prompt or PowerShell window in the repository
 folder:
 
 ```
-.\build.cmd
+.\build.bat
 ```
 
-The output is `build\playsound.exe`. `build.cmd` finds Visual Studio with
+The output is `build\playsound.exe`. `build.bat` finds Visual Studio with
 `vswhere.exe` and sets up the build tools itself, so you do not need a
 Developer Command Prompt. At the end, it shows the size of the exe and
 the DLLs that the exe needs.

@@ -1,7 +1,7 @@
 * text=auto
 
 # cmd.exe can misread batch files with LF line endings.
-*.cmd text eol=crlf
+*.bat text eol=crlf
 
 # The .ps1 files are test scripts. Do not count them in the language
 # statistics on GitHub, which should show the C program.
